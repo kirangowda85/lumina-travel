@@ -60,10 +60,14 @@ export default function DestinationCard({
         >
           <svg
             viewBox="0 0 24 24"
-            className={`h-4 w-4 ${favorited ? "fill-rust stroke-rust" : "fill-none stroke-navy"}`}
-            strokeWidth={1.6}
+            className={`h-4 w-4 transition-transform duration-200 active:scale-125 ${
+              favorited ? "fill-rust stroke-rust" : "fill-none stroke-navy"
+            }`}
+            strokeWidth={1.8}
+            strokeLinecap="round"
+            strokeLinejoin="round"
           >
-            <path d="M12 20.5s-7.5-4.6-9.8-9.2C.5 7.6 2.4 4.5 5.6 4.1c2-.3 3.8.7 4.4 2.3.6-1.6 2.4-2.6 4.4-2.3 3.2.4 5.1 3.5 3.4 7.2C19.5 15.9 12 20.5 12 20.5Z" />
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
           </svg>
         </button>
       </div>
