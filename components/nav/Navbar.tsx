@@ -57,6 +57,29 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
+            href="https://www.instagram.com/payana_karunadu"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center h-8 w-8 rounded-full bg-navy/5 text-navy hover:bg-pink-50 hover:text-pink-600 transition-colors"
+            title="Follow on Instagram @payana_karunadu"
+            aria-label="Instagram @payana_karunadu"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="h-4 w-4"
+            >
+              <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+            </svg>
+          </a>
+
+          <a
             href="https://wa.me/918970644859?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
             target="_blank"
             rel="noopener noreferrer"

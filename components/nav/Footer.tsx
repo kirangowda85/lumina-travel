@@ -77,10 +77,41 @@ export default function Footer() {
 
           <div>
             <p className="text-sm font-medium text-white">Follow</p>
-            <ul className="mt-4 space-y-2 text-sm text-white/60">
-              <li><a href="#" className="hover:text-white">Instagram</a></li>
-              <li><a href="#" className="hover:text-white">Journal</a></li>
-              <li><a href="#" className="hover:text-white">Pinterest</a></li>
+            <ul className="mt-4 space-y-2.5 text-sm text-white/60">
+              <li>
+                <a
+                  href="https://www.instagram.com/payana_karunadu"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-2 group transition-colors"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="h-4 w-4 text-pink-400 group-hover:scale-110 transition-transform"
+                  >
+                    <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                    <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                  </svg>
+                  <span>Instagram <span className="text-white/40">(@payana_karunadu)</span></span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://wa.me/918970644859?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-white flex items-center gap-2 transition-colors"
+                >
+                  <span>💬</span>
+                  <span>WhatsApp Updates</span>
+                </a>
+              </li>
             </ul>
           </div>
         </div>
