@@ -1,0 +1,136 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id // Clerk userId (from auth() / webhook), not auto-generated
+  name      String
+  email     String   @unique
+  avatarUrl String?
+  createdAt DateTime @default(now())
+
+  bookings     Booking[]
+  favorites    Favorite[]
+  verification IdentityVerification?
+}
+
+model IdentityVerification {
+  id               String   @id @default(cuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  documentType     String // "passport" | "national_id" | "driver_license"
+  documentNumber   String
+  documentImageUrl String // ImageKit CDN URL returned after upload
+  documentFileId   String? // ImageKit fileId, useful for later delete/replace calls
+  status           String   @default("pending") // pending | approved | rejected
+  submittedAt      DateTime @default(now())
+}
+
+model Package {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  location     String
+  category     String // Beach, Mountain, Culture, Adventure...
+  description  String
+  basePrice    Int // per person, in cents
+  durationDays Int
+  images       String[]
+  videoUrl     String?
+  itinerary    Json // ItineraryDay[] — { day, title, description }[], no separate table since it's never queried on its own
+  featured     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  availability AvailabilityDate[]
+  roomOptions  RoomOption[]
+  bookings     Booking[]
+  favorites    Favorite[]
+}
+
+model HeroSettings {
+  id          String   @id @default("default")
+  badge       String   @default("Four destinations, one standard of care")
+  title       String   @default("Curated Journeys, Perfectly Reserved")
+  description String   @default("Every itinerary in our collection is planned to the day and paced to the traveler. Choose a journey, pick your dates, and we handle the rest.")
+  videoUrl    String?  @default("https://assets.mixkit.co/videos/preview/mixkit-top-aerial-view-of-a-beach-resort-1662-large.mp4")
+  imageUrl    String?  @default("https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1800&q=80")
+  updatedAt   DateTime @updatedAt
+}
+
+model AvailabilityDate {
+  id          String   @id @default(cuid())
+  packageId   String
+  package     Package  @relation(fields: [packageId], references: [id])
+  date        DateTime
+  capacity    Int
+  booked      Int      @default(0)
+  fastFilling Boolean  @default(false)
+}
+
+model RoomOption {
+  id           String  @id @default(cuid())
+  packageId    String
+  package      Package @relation(fields: [packageId], references: [id])
+  name         String // "Ocean Suite", "Deluxe Double"
+  description  String
+  priceUpgrade Int // cents, added to base rate
+
+  bookings Booking[]
+}
+
+model Booking {
+  id           String      @id @default(cuid())
+  userId       String
+  user         User        @relation(fields: [userId], references: [id])
+  packageId    String
+  package      Package     @relation(fields: [packageId], references: [id])
+  selectedDate DateTime
+  adults       Int
+  children     Int
+  roomOptionId String?
+  roomOption   RoomOption? @relation(fields: [roomOptionId], references: [id])
+  baseRate     Int
+  upgradeFee   Int
+  taxesFees    Int
+  totalAmount  Int
+  status       String      @default("RESERVED") // RESERVED | CANCELLED | COMPLETED
+  createdAt    DateTime    @default(now())
+}
+
+model Favorite {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id])
+  packageId String
+  package   Package @relation(fields: [packageId], references: [id])
+
+  @@unique([userId, packageId])
+}
+
+model AdminUser {
+  id        String   @id @default(cuid())
+  username  String   @unique
+  password  String   // salt:hash format
+  name      String?
+  role      String   @default("admin") // "superadmin" | "admin"
+  createdAt DateTime @default(now())
+}
+
+model AboutSettings {
+  id             String   @id @default("default")
+  badge          String   @default("About")
+  title          String   @default("About Payana")
+  paragraph1     String   @default("Payana (ಪಯಣ) plans a small collection of journeys and plans each one completely: flights, rooms, guides, and the small decisions in between. Every itinerary in our collection is built and re-walked by our own team before it is offered to travelers.")
+  paragraph2     String   @default("We keep the collection deliberately small — four destinations at a time — so every detail can be held to the same standard, from the first confirmation email to the transfer home.")
+  ctaTitle       String   @default("Have a trip in mind?")
+  ctaDescription String   @default("Our team curates custom plans around what matters to you, not just fixed packages.")
+  ctaButtonText  String   @default("Request a Custom Plan")
+  ctaButtonLink  String   @default("/concierge")
+  updatedAt      DateTime @updatedAt
+}
+
