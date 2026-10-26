@@ -104,7 +104,7 @@ export default function DestinationTable({ initialPackages }: { initialPackages:
                     </span>
                   </td>
                   <td className="p-4">{pkg.durationDays} Days</td>
-                  <td className="p-4 font-medium">${(pkg.basePrice / 100).toLocaleString()}</td>
+                  <td className="p-4 font-medium">₹{(pkg.basePrice / 100).toLocaleString("en-IN")}</td>
                   <td className="p-4 text-center">
                     <button
                       onClick={() => handleToggleFeatured(pkg)}

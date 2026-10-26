@@ -122,7 +122,7 @@ export default function BookingTable({ initialBookings }: { initialBookings: Boo
                     {b.children > 0 && `, ${b.children} Child${b.children > 1 ? "ren" : ""}`}
                   </td>
                   <td className="p-4 font-semibold text-navy">
-                    ${(b.totalAmount / 100).toLocaleString()}
+                    ₹{(b.totalAmount / 100).toLocaleString("en-IN")}
                   </td>
                   <td className="p-4 text-center">
                     <span

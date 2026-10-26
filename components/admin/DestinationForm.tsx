@@ -219,7 +219,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
           </div>
 
           <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-2">Base Price (USD)</label>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-2">Base Price (₹ INR)</label>
             <input
               type="number"
               value={basePrice}
@@ -473,7 +473,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
                     setRoomOptions(next);
                   }}
                   required
-                  placeholder="Upgrade Fee (USD)"
+                  placeholder="Upgrade Fee (₹ INR)"
                   className="w-full px-3 py-2 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust"
                 />
               </div>

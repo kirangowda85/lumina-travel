@@ -32,9 +32,9 @@ export function calculatePrice(
 }
 
 export function formatPrice(cents: number): string {
-  return (cents / 100).toLocaleString("en-US", {
+  return (cents / 100).toLocaleString("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
     maximumFractionDigits: 0,
   });
 }
