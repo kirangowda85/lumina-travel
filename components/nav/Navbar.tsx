@@ -57,14 +57,14 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <a
-            href="https://wa.me/919876543210?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
+            href="https://wa.me/918970644859?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
             target="_blank"
             rel="noopener noreferrer"
             className="hidden lg:flex items-center gap-1.5 text-xs font-semibold text-navy bg-navy/5 hover:bg-navy/10 px-3 py-1.5 rounded-pill transition-colors"
             title="Chat on WhatsApp"
           >
             <span>📞</span>
-            <span>+91 98765 43210</span>
+            <span>+91 89706 44859</span>
           </a>
 
           <Link

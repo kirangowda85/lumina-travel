@@ -50,17 +50,22 @@ export default function Footer() {
             <ul className="mt-4 space-y-2.5 text-sm text-white/60">
               <li>
                 <a
-                  href="https://wa.me/919876543210?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
+                  href="https://wa.me/918970644859?text=Hello%20Payana%2C%20I%20would%20like%20to%20inquire%20about%20a%20curated%20journey."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="hover:text-white flex items-center gap-2"
                 >
-                  <span>📞</span> +91 98765 43210
+                  <span>📞</span> +91 89706 44859
                 </a>
               </li>
               <li>
-                <a href="https://wa.me/919876543210" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-2">
+                <a href="https://wa.me/918970644859" target="_blank" rel="noopener noreferrer" className="hover:text-white flex items-center gap-2">
                   <span>💬</span> WhatsApp Support
+                </a>
+              </li>
+              <li>
+                <a href="mailto:contact@payanakarunadu.online" className="hover:text-white flex items-center gap-2">
+                  <span>✉️</span> contact@payanakarunadu.online
                 </a>
               </li>
               <li><Link href="/about" className="hover:text-white">About us</Link></li>

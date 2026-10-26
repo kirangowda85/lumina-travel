@@ -40,8 +40,8 @@ export async function sendConciergeMessage(input: ConciergeInput): Promise<SendC
   }
 
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const to = process.env.CONCIERGE_TO_EMAIL ?? "payana.stories@gmail.com";
-  const from = process.env.CONCIERGE_FROM_EMAIL ?? "Payana Concierge <contact@payana-stories.vercel.app>";
+  const to = process.env.CONCIERGE_TO_EMAIL ?? "contact@payanakarunadu.online";
+  const from = process.env.CONCIERGE_FROM_EMAIL ?? "Payana Concierge <contact@payanakarunadu.online>";
 
   try {
     const { error } = await resend.emails.send({

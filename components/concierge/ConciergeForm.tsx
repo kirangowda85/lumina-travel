@@ -86,7 +86,7 @@ export default function ConciergeForm({
           onChange={(e) => setPhone(e.target.value)}
           disabled={isPending}
           className="mt-2 w-full rounded-lg border border-navy/15 bg-page px-3.5 py-2.5 text-sm text-navy placeholder:text-muted/70 focus:border-navy focus:outline-none"
-          placeholder="+91 98765 43210"
+          placeholder="+91 89706 44859"
         />
       </div>
 
