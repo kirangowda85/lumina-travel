@@ -83,20 +83,43 @@ export default function PriceSummaryCard({
         <span className="font-serif text-2xl font-semibold">{formatPrice(breakdown.totalAmount)}</span>
       </div>
 
-      <button
-        onClick={onSubmit}
-        disabled={disabled}
-        className="mt-5 w-full rounded-pill bg-rust py-3 text-sm font-medium text-white transition-colors hover:bg-rust-light disabled:cursor-not-allowed disabled:opacity-40"
-      >
-        {submitting ? "Reserving…" : "Proceed to Booking"}
-      </button>
-      {error ? (
-        <p className="mt-2 text-center text-xs text-rust-light">{error}</p>
-      ) : (
-        !selectedDate && (
-          <p className="mt-2 text-center text-xs text-white/50">Select a date to continue</p>
-        )
-      )}
+      {(() => {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const hasAvailableDates =
+          Boolean(pkg.availability && pkg.availability.length > 0) &&
+          pkg.availability.some((a) => {
+            const d = new Date(a.date + "T00:00:00");
+            return d >= now && a.booked < a.capacity;
+          });
+
+        return (
+          <>
+            <button
+              onClick={onSubmit}
+              disabled={disabled || !hasAvailableDates}
+              className="mt-5 w-full rounded-pill bg-rust py-3 text-sm font-medium text-white transition-colors hover:bg-rust-light disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {!hasAvailableDates
+                ? "Upcoming · Dates To Be Announced"
+                : submitting
+                ? "Reserving…"
+                : "Proceed to Booking"}
+            </button>
+            {error ? (
+              <p className="mt-2 text-center text-xs text-rust-light">{error}</p>
+            ) : !hasAvailableDates ? (
+              <p className="mt-2 text-center text-xs text-white/60">
+                Expedition dates are being scheduled soon
+              </p>
+            ) : (
+              !selectedDate && (
+                <p className="mt-2 text-center text-xs text-white/50">Select a date to continue</p>
+              )
+            )}
+          </>
+        );
+      })()}
     </div>
   );
 }

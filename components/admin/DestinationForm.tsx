@@ -51,9 +51,13 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         ]
   );
 
-  // Availability Date Generation & Schedule Pattern
-  const [schedulePattern, setSchedulePattern] = useState<"WEEKEND" | "SATURDAY" | "FRIDAY" | "DAILY">("WEEKEND");
-  const [availabilityDaysCount, setAvailabilityDaysCount] = useState<number>(60);
+  // Availability Dates (Admin manually adds dates; if empty, destination is 'Upcoming')
+  const [availabilityDates, setAvailabilityDates] = useState<string[]>(
+    initialPackage?.availability
+      ? Array.from(new Set(initialPackage.availability.map((a) => a.date))).sort()
+      : []
+  );
+  const [newDateInput, setNewDateInput] = useState<string>("");
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
@@ -97,34 +101,26 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
     setImageUrls((prev) => [...prev, ""]);
   };
 
+  const handleAddDate = () => {
+    if (!newDateInput) return;
+    if (!availabilityDates.includes(newDateInput)) {
+      const next = [...availabilityDates, newDateInput].sort();
+      setAvailabilityDates(next);
+    }
+    setNewDateInput("");
+  };
+
+  const handleRemoveDate = (dateToRemove: string) => {
+    setAvailabilityDates((prev) => prev.filter((d) => d !== dateToRemove));
+  };
+
+  const handleClearAllDates = () => {
+    setAvailabilityDates([]);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-
-    // Generate dates according to selected schedule pattern over the next N days
-    const generatedDates: string[] = [];
-    const today = new Date();
-    for (let i = 1; i <= availabilityDaysCount; i++) {
-      const d = new Date(today);
-      d.setDate(today.getDate() + i);
-      const dayOfWeek = d.getDay(); // 0 = Sun, 6 = Sat, 5 = Fri
-
-      let matches = false;
-      if (schedulePattern === "WEEKEND") {
-        matches = dayOfWeek === 6 || dayOfWeek === 0; // Saturdays & Sundays
-      } else if (schedulePattern === "SATURDAY") {
-        matches = dayOfWeek === 6; // Saturdays only
-      } else if (schedulePattern === "FRIDAY") {
-        matches = dayOfWeek === 5; // Fridays only
-      } else {
-        matches = true; // Daily
-      }
-
-      if (matches) {
-        generatedDates.push(d.toISOString().slice(0, 10));
-      }
-    }
-
 
     startTransition(async () => {
       const res = await savePackage({
@@ -141,7 +137,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         videoUrl,
         itinerary,
         roomOptions,
-        availabilityDates: generatedDates,
+        availabilityDates,
       });
 
       if (res.success) {
@@ -231,7 +227,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
             <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-2">Duration (Days)</label>
             <input
@@ -242,20 +238,6 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
               min={1}
               className="w-full px-4 py-2.5 rounded-card border border-navy/20 bg-page text-sm focus:outline-none focus:border-rust"
             />
-          </div>
-
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-2">Departure Schedule</label>
-            <select
-              value={schedulePattern}
-              onChange={(e) => setSchedulePattern(e.target.value as any)}
-              className="w-full px-4 py-2.5 rounded-card border border-navy/20 bg-page text-sm focus:outline-none focus:border-rust"
-            >
-              <option value="WEEKEND">Weekly (Saturdays & Sundays)</option>
-              <option value="SATURDAY">Weekly (Saturdays Only)</option>
-              <option value="FRIDAY">Weekly (Fridays Only)</option>
-              <option value="DAILY">Everyday / Flexible</option>
-            </select>
           </div>
 
           <div className="flex items-center pt-6">
@@ -492,6 +474,114 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Section 5: Departure Dates & Availability */}
+      <div className="bg-card p-6 rounded-card border border-navy/10 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-navy/10 pb-3 gap-2">
+          <div>
+            <h2 className="font-serif text-xl font-semibold text-navy">Departure Dates & Batches</h2>
+            <p className="text-xs text-muted mt-0.5">
+              Only dates explicitly added here will be open for bookings. If no dates are added, this destination displays as <strong>Upcoming</strong>.
+            </p>
+          </div>
+          {availabilityDates.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllDates}
+              className="text-xs font-medium text-rose-600 hover:text-rose-700 hover:underline w-fit"
+            >
+              Clear all dates (Set to Upcoming)
+            </button>
+          )}
+        </div>
+
+        {/* Date Picker Input */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-card bg-page border border-navy/10">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
+              Select Specific Departure Date
+            </label>
+            <input
+              type="date"
+              value={newDateInput}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setNewDateInput(e.target.value)}
+              className="w-full px-3 py-2 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAddDate}
+            disabled={!newDateInput}
+            className="sm:self-end px-5 py-2.5 rounded-pill bg-navy text-white text-xs font-semibold hover:bg-navy-light disabled:opacity-40 transition-colors"
+          >
+            + Add Departure Date
+          </button>
+        </div>
+
+        {/* Dates List */}
+        {availabilityDates.length === 0 ? (
+          <div className="p-6 rounded-card border border-dashed border-amber-300 bg-amber-50/50 text-center space-y-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-pill">
+              ✨ Status: Upcoming Destination
+            </span>
+            <p className="text-sm font-medium text-navy">
+              No departure dates scheduled yet.
+            </p>
+            <p className="text-xs text-muted max-w-md mx-auto">
+              This destination will appear on the website marked as <strong>Upcoming</strong>. Travelers can explore the photos and day-by-day itinerary, and bookings will open only when you add dates above.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs text-muted">
+              <span>{availabilityDates.length} Departure Date{availabilityDates.length !== 1 ? "s" : ""} Added</span>
+              <span>Duration: {durationDays} Days / {Math.max(1, durationDays - 1)} Nights</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {availabilityDates.map((dateStr) => {
+                const startObj = new Date(dateStr + "T00:00:00");
+                const returnObj = new Date(startObj);
+                returnObj.setDate(returnObj.getDate() + durationDays);
+
+                const startFormatted = startObj.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                const returnFormatted = returnObj.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+
+                return (
+                  <div
+                    key={dateStr}
+                    className="p-3 rounded-card border border-navy/15 bg-page flex items-start justify-between gap-2 shadow-xs"
+                  >
+                    <div className="space-y-0.5">
+                      <div className="text-xs font-bold text-navy">{startFormatted}</div>
+                      <div className="text-[11px] text-rust font-medium">➔ Return: {returnFormatted}</div>
+                      <div className="text-[10px] text-muted">{durationDays} Days Window</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDate(dateStr)}
+                      className="text-xs text-muted hover:text-rose-600 p-1"
+                      title="Remove date"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Submit Button */}

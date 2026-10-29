@@ -294,23 +294,7 @@ async function seed() {
     });
   }
 
-  // Also ensure Deviramma Hill Trek has future availability dates
-  const deviramma = await prisma.package.findUnique({ where: { slug: "deviramma-hill-trek" } });
-  if (deviramma) {
-    const existingDates = await prisma.availabilityDate.count({ where: { packageId: deviramma.id } });
-    if (existingDates === 0) {
-      await prisma.availabilityDate.createMany({
-        data: departureDates.map((d, idx) => ({
-          packageId: deviramma.id,
-          date: d,
-          capacity: 12,
-          booked: idx === 0 ? 9 : 2,
-          fastFilling: idx === 0,
-        })),
-      });
-    }
-  }
-
+  // Note: Deviramma Hill Trek and other journeys have their availability dates manually managed by admin
   console.log("Successfully seeded all Karnataka packages!");
 }
 

@@ -112,13 +112,13 @@ export async function savePackage(data: {
       }
 
       // Update availability
-      if (data.availabilityDates.length > 0) {
-        await prisma.availabilityDate.deleteMany({ where: { packageId } });
+      await prisma.availabilityDate.deleteMany({ where: { packageId } });
+      if (data.availabilityDates && data.availabilityDates.length > 0) {
         await prisma.availabilityDate.createMany({
           data: data.availabilityDates.map((dateStr) => ({
             packageId: packageId!,
             date: new Date(dateStr),
-            capacity: 10,
+            capacity: 15,
             booked: 0,
           })),
         });

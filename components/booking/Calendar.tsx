@@ -60,8 +60,31 @@ export default function Calendar({
       </div>
 
       {availableSlots.length === 0 ? (
-        <div className="p-8 text-center bg-page rounded-card border border-navy/10 text-muted text-sm">
-          No departure date ranges are currently scheduled for this journey. Check back soon!
+        <div className="p-10 text-center bg-page rounded-card border border-dashed border-navy/20 space-y-4">
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-rust/10 text-rust mx-auto">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <div>
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-rust bg-rust/10 px-3 py-1 rounded-pill mb-2">
+              Upcoming Expedition
+            </span>
+            <h4 className="font-serif text-xl font-semibold text-navy">Departure Dates To Be Announced</h4>
+            <p className="mt-1.5 text-xs sm:text-sm text-muted max-w-md mx-auto leading-relaxed">
+              We haven&apos;t opened departure dates for this journey yet. Our expedition team is finalizing itineraries and dates. Check back soon or reach out to our concierge for custom departures.
+            </p>
+          </div>
+          <div className="pt-2">
+            <a
+              href="https://wa.me/?text=Hi%2C+I+would+like+to+know+upcoming+dates+for+this+journey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-pill bg-navy text-white text-xs font-semibold hover:bg-navy-light transition-colors shadow-sm"
+            >
+              <span>💬</span> Inquire with Travel Concierge
+            </a>
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
