@@ -63,13 +63,14 @@ model HeroSettings {
 }
 
 model AvailabilityDate {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   packageId   String
-  package     Package  @relation(fields: [packageId], references: [id])
+  package     Package   @relation(fields: [packageId], references: [id])
   date        DateTime
+  endDate     DateTime?
   capacity    Int
-  booked      Int      @default(0)
-  fastFilling Boolean  @default(false)
+  booked      Int       @default(0)
+  fastFilling Boolean   @default(false)
 }
 
 model RoomOption {

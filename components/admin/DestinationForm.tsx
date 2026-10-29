@@ -51,13 +51,30 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         ]
   );
 
-  // Availability Dates (Admin manually adds dates; if empty, destination is 'Upcoming')
-  const [availabilityDates, setAvailabilityDates] = useState<string[]>(
-    initialPackage?.availability
-      ? Array.from(new Set(initialPackage.availability.map((a) => a.date))).sort()
-      : []
-  );
-  const [newDateInput, setNewDateInput] = useState<string>("");
+  // Availability Dates / Batches (Admin manually adds start & end dates; if empty, destination is 'Upcoming')
+  const [tripBatches, setTripBatches] = useState<{ startDate: string; endDate: string }[]>(() => {
+    if (initialPackage?.availability && initialPackage.availability.length > 0) {
+      return initialPackage.availability
+        .map((a) => {
+          let endDate = a.endDate;
+          if (!endDate) {
+            const d = new Date(a.date + "T00:00:00");
+            d.setDate(d.getDate() + Math.max(0, (initialPackage.durationDays || 2) - 1));
+            endDate = d.toISOString().slice(0, 10);
+          }
+          return {
+            startDate: a.date,
+            endDate,
+          };
+        })
+        .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
+    }
+    return [];
+  });
+
+  const [newStartDate, setNewStartDate] = useState<string>("");
+  const [newEndDate, setNewEndDate] = useState<string>("");
+  const [batchError, setBatchError] = useState<string | null>(null);
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
@@ -101,21 +118,48 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
     setImageUrls((prev) => [...prev, ""]);
   };
 
-  const handleAddDate = () => {
-    if (!newDateInput) return;
-    if (!availabilityDates.includes(newDateInput)) {
-      const next = [...availabilityDates, newDateInput].sort();
-      setAvailabilityDates(next);
+  const handleStartDateChange = (val: string) => {
+    setNewStartDate(val);
+    setBatchError(null);
+    if (val) {
+      // Auto-suggest return date based on current durationDays
+      const d = new Date(val + "T00:00:00");
+      d.setDate(d.getDate() + Math.max(0, durationDays - 1));
+      setNewEndDate(d.toISOString().slice(0, 10));
     }
-    setNewDateInput("");
   };
 
-  const handleRemoveDate = (dateToRemove: string) => {
-    setAvailabilityDates((prev) => prev.filter((d) => d !== dateToRemove));
+  const handleAddBatch = () => {
+    if (!newStartDate || !newEndDate) {
+      setBatchError("Please select both a Start Date and an End Date.");
+      return;
+    }
+    if (new Date(newEndDate + "T00:00:00") < new Date(newStartDate + "T00:00:00")) {
+      setBatchError("End Date cannot be earlier than Start Date.");
+      return;
+    }
+    const exists = tripBatches.some(
+      (b) => b.startDate === newStartDate && b.endDate === newEndDate
+    );
+    if (exists) {
+      setBatchError("This trip date batch is already added.");
+      return;
+    }
+    setBatchError(null);
+    const next = [...tripBatches, { startDate: newStartDate, endDate: newEndDate }].sort(
+      (a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+    setTripBatches(next);
+    setNewStartDate("");
+    setNewEndDate("");
   };
 
-  const handleClearAllDates = () => {
-    setAvailabilityDates([]);
+  const handleRemoveBatch = (index: number) => {
+    setTripBatches((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleClearAllBatches = () => {
+    setTripBatches([]);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -137,7 +181,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         videoUrl,
         itinerary,
         roomOptions,
-        availabilityDates,
+        availabilityDates: tripBatches,
       });
 
       if (res.success) {
@@ -267,22 +311,22 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         </div>
       </div>
 
-      {/* Section 2: Departure Dates & Batches */}
+      {/* Section 2: Departure & Return Dates (Batches) */}
       <div className="bg-card p-6 rounded-card border-2 border-rust/40 shadow-sm space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-navy/10 pb-3 gap-2">
           <div>
             <div className="flex items-center gap-2">
               <span className="text-xl">📅</span>
-              <h2 className="font-serif text-xl font-semibold text-navy">Trip Departure Dates & Batches</h2>
+              <h2 className="font-serif text-xl font-semibold text-navy">Trip Departure & Return Dates (Batches)</h2>
             </div>
             <p className="text-xs text-muted mt-1">
-              Add the exact departure dates for this trip. Only dates you add here will be open for bookings. If no dates are added, this trek will automatically display as <strong>Upcoming</strong>.
+              Add individual trip batches by selecting both <strong>Start Date</strong> and <strong>End Date</strong> (e.g. 6 & 7 this week, 11 & 12 next trip). You can add as many dates as needed. If empty, the trip displays as <strong>Upcoming</strong>.
             </p>
           </div>
-          {availabilityDates.length > 0 && (
+          {tripBatches.length > 0 && (
             <button
               type="button"
-              onClick={handleClearAllDates}
+              onClick={handleClearAllBatches}
               className="text-xs font-medium text-rose-600 hover:text-rose-700 hover:underline w-fit"
             >
               Clear all dates (Set to Upcoming)
@@ -290,32 +334,57 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
           )}
         </div>
 
-        {/* Date Picker Input */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-card bg-page border border-navy/10">
-          <div className="flex-1">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
-              Select Trip Departure Date
-            </label>
-            <input
-              type="date"
-              value={newDateInput}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setNewDateInput(e.target.value)}
-              className="w-full px-3 py-2.5 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy font-medium"
-            />
+        {/* Start Date & End Date Inputs */}
+        <div className="p-4 rounded-card bg-page border border-navy/10 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
+                <span>🛫</span> Start Date (Departure)
+              </label>
+              <input
+                type="date"
+                value={newStartDate}
+                min={new Date().toISOString().slice(0, 10)}
+                onChange={(e) => handleStartDateChange(e.target.value)}
+                className="w-full px-3 py-2.5 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy font-medium"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-navy mb-1.5 flex items-center gap-1.5">
+                <span>🛬</span> End Date (Return)
+              </label>
+              <input
+                type="date"
+                value={newEndDate}
+                min={newStartDate || new Date().toISOString().slice(0, 10)}
+                onChange={(e) => {
+                  setNewEndDate(e.target.value);
+                  setBatchError(null);
+                }}
+                className="w-full px-3 py-2.5 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy font-medium"
+              />
+            </div>
+
+            <div className="md:col-span-1">
+              <button
+                type="button"
+                onClick={handleAddBatch}
+                disabled={!newStartDate || !newEndDate}
+                className="w-full py-2.5 px-4 rounded-pill bg-rust text-white text-xs font-semibold hover:bg-rust-light disabled:opacity-40 transition-colors shadow-sm flex items-center justify-center gap-1"
+              >
+                <span>+ Add Trip</span>
+              </button>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={handleAddDate}
-            disabled={!newDateInput}
-            className="sm:self-end px-6 py-2.5 rounded-pill bg-rust text-white text-xs font-semibold hover:bg-rust-light disabled:opacity-40 transition-colors shadow-sm"
-          >
-            + Add Trip Date
-          </button>
+
+          {batchError && (
+            <p className="text-xs text-rose-600 font-medium">⚠️ {batchError}</p>
+          )}
         </div>
 
-        {/* Dates List */}
-        {availabilityDates.length === 0 ? (
+        {/* Batches List */}
+        {tripBatches.length === 0 ? (
           <div className="p-6 rounded-card border border-dashed border-amber-300 bg-amber-50/60 text-center space-y-2">
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-pill">
               ✨ Status: Upcoming Trip
@@ -330,14 +399,16 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between text-xs text-muted">
-              <span className="font-semibold text-navy">{availabilityDates.length} Departure Date{availabilityDates.length !== 1 ? "s" : ""} Scheduled</span>
-              <span>Trip Duration: {durationDays} Days / {Math.max(1, durationDays - 1)} Nights</span>
+              <span className="font-semibold text-navy">
+                {tripBatches.length} Scheduled Trip Batch{tripBatches.length !== 1 ? "es" : ""}
+              </span>
+              <span>Click ✕ to remove any batch</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {availabilityDates.map((dateStr) => {
-                const startObj = new Date(dateStr + "T00:00:00");
-                const returnObj = new Date(startObj);
-                returnObj.setDate(returnObj.getDate() + durationDays);
+              {tripBatches.map((batch, index) => {
+                const startObj = new Date(batch.startDate + "T00:00:00");
+                const endObj = new Date(batch.endDate + "T00:00:00");
+                const diffDays = Math.max(1, Math.round((endObj.getTime() - startObj.getTime()) / (1000 * 60 * 60 * 24)) + 1);
 
                 const startFormatted = startObj.toLocaleDateString("en-US", {
                   weekday: "short",
@@ -345,7 +416,7 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
                   day: "numeric",
                   year: "numeric",
                 });
-                const returnFormatted = returnObj.toLocaleDateString("en-US", {
+                const endFormatted = endObj.toLocaleDateString("en-US", {
                   weekday: "short",
                   month: "short",
                   day: "numeric",
@@ -354,22 +425,27 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
 
                 return (
                   <div
-                    key={dateStr}
-                    className="p-3.5 rounded-card border border-navy/15 bg-page flex items-start justify-between gap-2 shadow-xs"
+                    key={`${batch.startDate}-${batch.endDate}-${index}`}
+                    className="p-3.5 rounded-card border border-navy/15 bg-page flex items-start justify-between gap-2 shadow-xs hover:border-rust/60 transition-colors"
                   >
                     <div className="space-y-1">
+                      <div className="inline-flex items-center gap-1 text-[10px] font-bold text-rust bg-rust/10 px-2 py-0.5 rounded-pill">
+                        Trip #{index + 1} · {diffDays} Days
+                      </div>
                       <div className="text-xs font-bold text-navy flex items-center gap-1.5">
-                        <span className="text-rust">📅</span>
+                        <span>🛫</span>
                         <span>{startFormatted}</span>
                       </div>
-                      <div className="text-[11px] text-rust font-medium">➔ Return: {returnFormatted}</div>
-                      <div className="text-[10px] text-muted">{durationDays} Days Duration</div>
+                      <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                        <span>🛬</span>
+                        <span>➔ Return: {endFormatted}</span>
+                      </div>
                     </div>
                     <button
                       type="button"
-                      onClick={() => handleRemoveDate(dateStr)}
+                      onClick={() => handleRemoveBatch(index)}
                       className="text-xs text-muted hover:text-rose-600 p-1 font-bold"
-                      title="Remove date"
+                      title="Remove date batch"
                     >
                       ✕
                     </button>

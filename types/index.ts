@@ -28,6 +28,7 @@ export interface AvailabilityDate {
   id: string;
   packageId: string;
   date: string; // ISO YYYY-MM-DD
+  endDate?: string | null; // ISO YYYY-MM-DD
   capacity: number;
   booked: number;
   fastFilling: boolean;

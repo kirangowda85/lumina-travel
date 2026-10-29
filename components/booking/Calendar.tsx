@@ -91,7 +91,17 @@ export default function Calendar({
           {availableSlots.map((slot) => {
             const isSelected = selectedDate === slot.date;
             const startStr = formatDate(slot.date);
-            const returnStr = getReturnDate(slot.date);
+            const returnStr = slot.endDate ? formatDate(slot.endDate) : getReturnDate(slot.date);
+            const batchDuration = slot.endDate
+              ? Math.max(
+                  1,
+                  Math.round(
+                    (new Date(slot.endDate + "T00:00:00").getTime() -
+                      new Date(slot.date + "T00:00:00").getTime()) /
+                      (1000 * 60 * 60 * 24)
+                  ) + 1
+                )
+              : durationDays;
             const spotsRemaining = slot.capacity - slot.booked;
             const isFastFilling = slot.fastFilling || spotsRemaining <= 3;
 
@@ -138,7 +148,7 @@ export default function Calendar({
 
                 {/* Bottom Bar */}
                 <div className={`pt-2 border-t text-xs flex items-center justify-between ${isSelected ? "border-white/15 text-white/90" : "border-navy/10 text-muted"}`}>
-                  <span>{durationDays} Days Duration</span>
+                  <span>{batchDuration} Days Duration</span>
                   <span className={`font-semibold ${isSelected ? "text-white" : "text-navy"}`}>
                     {isSelected ? "✓ Selected" : "Select Date →"}
                   </span>

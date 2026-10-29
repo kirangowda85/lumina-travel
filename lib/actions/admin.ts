@@ -62,7 +62,7 @@ export async function savePackage(data: {
   videoUrl?: string | null;
   itinerary: { day: number; title: string; description: string }[];
   roomOptions: { name: string; description: string; priceUpgrade: number }[];
-  availabilityDates: string[]; // array of ISO YYYY-MM-DD
+  availabilityDates: (string | { startDate: string; endDate?: string | null })[];
 }) {
   const session = await getAdminSession();
   if (!session) return { success: false, error: "Unauthorized. Admin session required." };
@@ -76,6 +76,26 @@ export async function savePackage(data: {
     if (slugExists) {
       return { success: false, error: `Slug "${data.slug}" is already in use by another destination.` };
     }
+
+    const parsedAvailability = (data.availabilityDates || []).map((item) => {
+      if (typeof item === "string") {
+        if (item.includes(":")) {
+          const [s, e] = item.split(":");
+          return {
+            startDate: new Date(s),
+            endDate: e ? new Date(e) : null,
+          };
+        }
+        return {
+          startDate: new Date(item),
+          endDate: null,
+        };
+      }
+      return {
+        startDate: new Date(item.startDate),
+        endDate: item.endDate ? new Date(item.endDate) : null,
+      };
+    });
 
     let packageId = data.id;
 
@@ -113,11 +133,12 @@ export async function savePackage(data: {
 
       // Update availability
       await prisma.availabilityDate.deleteMany({ where: { packageId } });
-      if (data.availabilityDates && data.availabilityDates.length > 0) {
+      if (parsedAvailability.length > 0) {
         await prisma.availabilityDate.createMany({
-          data: data.availabilityDates.map((dateStr) => ({
+          data: parsedAvailability.map((slot) => ({
             packageId: packageId!,
-            date: new Date(dateStr),
+            date: slot.startDate,
+            endDate: slot.endDate,
             capacity: 15,
             booked: 0,
           })),
@@ -153,12 +174,13 @@ export async function savePackage(data: {
         });
       }
 
-      if (data.availabilityDates.length > 0) {
+      if (parsedAvailability.length > 0) {
         await prisma.availabilityDate.createMany({
-          data: data.availabilityDates.map((dateStr) => ({
+          data: parsedAvailability.map((slot) => ({
             packageId: packageId!,
-            date: new Date(dateStr),
-            capacity: 10,
+            date: slot.startDate,
+            endDate: slot.endDate,
+            capacity: 15,
             booked: 0,
           })),
         });

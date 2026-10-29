@@ -38,6 +38,7 @@ function toAvailability(a: PrismaAvailabilityDate): AvailabilityDate {
     id: a.id,
     packageId: a.packageId,
     date: a.date.toISOString().slice(0, 10),
+    endDate: a.endDate ? a.endDate.toISOString().slice(0, 10) : null,
     capacity: a.capacity,
     booked: a.booked,
     fastFilling: a.fastFilling,
