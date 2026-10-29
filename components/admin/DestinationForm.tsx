@@ -267,7 +267,121 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
         </div>
       </div>
 
-      {/* Section 2: Media & Video */}
+      {/* Section 2: Departure Dates & Batches */}
+      <div className="bg-card p-6 rounded-card border-2 border-rust/40 shadow-sm space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-navy/10 pb-3 gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📅</span>
+              <h2 className="font-serif text-xl font-semibold text-navy">Trip Departure Dates & Batches</h2>
+            </div>
+            <p className="text-xs text-muted mt-1">
+              Add the exact departure dates for this trip. Only dates you add here will be open for bookings. If no dates are added, this trek will automatically display as <strong>Upcoming</strong>.
+            </p>
+          </div>
+          {availabilityDates.length > 0 && (
+            <button
+              type="button"
+              onClick={handleClearAllDates}
+              className="text-xs font-medium text-rose-600 hover:text-rose-700 hover:underline w-fit"
+            >
+              Clear all dates (Set to Upcoming)
+            </button>
+          )}
+        </div>
+
+        {/* Date Picker Input */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-card bg-page border border-navy/10">
+          <div className="flex-1">
+            <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
+              Select Trip Departure Date
+            </label>
+            <input
+              type="date"
+              value={newDateInput}
+              min={new Date().toISOString().slice(0, 10)}
+              onChange={(e) => setNewDateInput(e.target.value)}
+              className="w-full px-3 py-2.5 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy font-medium"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={handleAddDate}
+            disabled={!newDateInput}
+            className="sm:self-end px-6 py-2.5 rounded-pill bg-rust text-white text-xs font-semibold hover:bg-rust-light disabled:opacity-40 transition-colors shadow-sm"
+          >
+            + Add Trip Date
+          </button>
+        </div>
+
+        {/* Dates List */}
+        {availabilityDates.length === 0 ? (
+          <div className="p-6 rounded-card border border-dashed border-amber-300 bg-amber-50/60 text-center space-y-2">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-pill">
+              ✨ Status: Upcoming Trip
+            </span>
+            <p className="text-sm font-semibold text-navy">
+              No departure dates added yet.
+            </p>
+            <p className="text-xs text-muted max-w-md mx-auto">
+              This destination will appear on the website marked as <strong>Upcoming</strong>. Travelers can explore the photos and day-by-day itinerary, and bookings will open only when you add trip dates above.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between text-xs text-muted">
+              <span className="font-semibold text-navy">{availabilityDates.length} Departure Date{availabilityDates.length !== 1 ? "s" : ""} Scheduled</span>
+              <span>Trip Duration: {durationDays} Days / {Math.max(1, durationDays - 1)} Nights</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {availabilityDates.map((dateStr) => {
+                const startObj = new Date(dateStr + "T00:00:00");
+                const returnObj = new Date(startObj);
+                returnObj.setDate(returnObj.getDate() + durationDays);
+
+                const startFormatted = startObj.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+                const returnFormatted = returnObj.toLocaleDateString("en-US", {
+                  weekday: "short",
+                  month: "short",
+                  day: "numeric",
+                  year: "numeric",
+                });
+
+                return (
+                  <div
+                    key={dateStr}
+                    className="p-3.5 rounded-card border border-navy/15 bg-page flex items-start justify-between gap-2 shadow-xs"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold text-navy flex items-center gap-1.5">
+                        <span className="text-rust">📅</span>
+                        <span>{startFormatted}</span>
+                      </div>
+                      <div className="text-[11px] text-rust font-medium">➔ Return: {returnFormatted}</div>
+                      <div className="text-[10px] text-muted">{durationDays} Days Duration</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDate(dateStr)}
+                      className="text-xs text-muted hover:text-rose-600 p-1 font-bold"
+                      title="Remove date"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Section 3: Media & Video */}
 
       <div className="bg-card p-6 rounded-card border border-navy/10 shadow-sm space-y-6">
         <h2 className="font-serif text-xl font-semibold text-navy border-b border-navy/10 pb-3">Media & Video Uploads</h2>
@@ -474,114 +588,6 @@ export default function DestinationForm({ initialPackage }: { initialPackage?: P
             </div>
           ))}
         </div>
-      </div>
-
-      {/* Section 5: Departure Dates & Availability */}
-      <div className="bg-card p-6 rounded-card border border-navy/10 shadow-sm space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-navy/10 pb-3 gap-2">
-          <div>
-            <h2 className="font-serif text-xl font-semibold text-navy">Departure Dates & Batches</h2>
-            <p className="text-xs text-muted mt-0.5">
-              Only dates explicitly added here will be open for bookings. If no dates are added, this destination displays as <strong>Upcoming</strong>.
-            </p>
-          </div>
-          {availabilityDates.length > 0 && (
-            <button
-              type="button"
-              onClick={handleClearAllDates}
-              className="text-xs font-medium text-rose-600 hover:text-rose-700 hover:underline w-fit"
-            >
-              Clear all dates (Set to Upcoming)
-            </button>
-          )}
-        </div>
-
-        {/* Date Picker Input */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-4 rounded-card bg-page border border-navy/10">
-          <div className="flex-1">
-            <label className="block text-xs font-semibold uppercase tracking-wider text-muted mb-1">
-              Select Specific Departure Date
-            </label>
-            <input
-              type="date"
-              value={newDateInput}
-              min={new Date().toISOString().slice(0, 10)}
-              onChange={(e) => setNewDateInput(e.target.value)}
-              className="w-full px-3 py-2 rounded-card border border-navy/20 bg-card text-sm focus:outline-none focus:border-rust text-navy"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={handleAddDate}
-            disabled={!newDateInput}
-            className="sm:self-end px-5 py-2.5 rounded-pill bg-navy text-white text-xs font-semibold hover:bg-navy-light disabled:opacity-40 transition-colors"
-          >
-            + Add Departure Date
-          </button>
-        </div>
-
-        {/* Dates List */}
-        {availabilityDates.length === 0 ? (
-          <div className="p-6 rounded-card border border-dashed border-amber-300 bg-amber-50/50 text-center space-y-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-amber-800 bg-amber-100 px-3 py-1 rounded-pill">
-              ✨ Status: Upcoming Destination
-            </span>
-            <p className="text-sm font-medium text-navy">
-              No departure dates scheduled yet.
-            </p>
-            <p className="text-xs text-muted max-w-md mx-auto">
-              This destination will appear on the website marked as <strong>Upcoming</strong>. Travelers can explore the photos and day-by-day itinerary, and bookings will open only when you add dates above.
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between text-xs text-muted">
-              <span>{availabilityDates.length} Departure Date{availabilityDates.length !== 1 ? "s" : ""} Added</span>
-              <span>Duration: {durationDays} Days / {Math.max(1, durationDays - 1)} Nights</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {availabilityDates.map((dateStr) => {
-                const startObj = new Date(dateStr + "T00:00:00");
-                const returnObj = new Date(startObj);
-                returnObj.setDate(returnObj.getDate() + durationDays);
-
-                const startFormatted = startObj.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-                const returnFormatted = returnObj.toLocaleDateString("en-US", {
-                  weekday: "short",
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                });
-
-                return (
-                  <div
-                    key={dateStr}
-                    className="p-3 rounded-card border border-navy/15 bg-page flex items-start justify-between gap-2 shadow-xs"
-                  >
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-navy">{startFormatted}</div>
-                      <div className="text-[11px] text-rust font-medium">➔ Return: {returnFormatted}</div>
-                      <div className="text-[10px] text-muted">{durationDays} Days Window</div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveDate(dateStr)}
-                      className="text-xs text-muted hover:text-rose-600 p-1"
-                      title="Remove date"
-                    >
-                      ✕
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Submit Button */}
