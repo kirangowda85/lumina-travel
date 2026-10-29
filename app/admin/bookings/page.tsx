@@ -1,6 +1,9 @@
 import { getAllBookingsAdmin } from "@/lib/admin";
 import BookingTable from "@/components/admin/BookingTable";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Customer Bookings | Payana Admin",
 };

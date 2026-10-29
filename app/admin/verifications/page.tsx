@@ -1,6 +1,9 @@
 import { getAllVerifications } from "@/lib/admin";
 import VerificationTable from "@/components/admin/VerificationTable";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Identity Verifications | Payana Admin",
 };

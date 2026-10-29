@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { updateBookingStatus } from "@/lib/actions/admin";
 
 type BookingRow = {
@@ -25,10 +26,31 @@ type BookingRow = {
 };
 
 export default function BookingTable({ initialBookings }: { initialBookings: BookingRow[] }) {
+  const router = useRouter();
   const [bookings, setBookings] = useState(initialBookings);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [search, setSearch] = useState<string>("");
   const [isPending, startTransition] = useTransition();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Sync state whenever new bookings arrive from the server
+  useEffect(() => {
+    setBookings(initialBookings);
+  }, [initialBookings]);
+
+  // Real-time polling every 15 seconds to pull new reservations automatically
+  useEffect(() => {
+    const timer = setInterval(() => {
+      router.refresh();
+    }, 15000);
+    return () => clearInterval(timer);
+  }, [router]);
+
+  const handleManualRefresh = () => {
+    setIsRefreshing(true);
+    router.refresh();
+    setTimeout(() => setIsRefreshing(false), 800);
+  };
 
   const filtered = bookings.filter((b) => {
     const matchesStatus = filterStatus === "ALL" || b.status === filterStatus;
@@ -64,18 +86,31 @@ export default function BookingTable({ initialBookings }: { initialBookings: Boo
           className="px-4 py-2.5 rounded-card border border-navy/20 bg-page text-sm focus:outline-none focus:border-rust max-w-md"
         />
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted">Status:</span>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 rounded-card border border-navy/20 bg-page text-xs font-medium focus:outline-none focus:border-rust"
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="px-3.5 py-2 rounded-card border border-navy/20 bg-page text-xs font-semibold text-navy hover:bg-navy/5 flex items-center gap-1.5 transition-colors disabled:opacity-50"
+            title="Fetch latest customer reservations"
           >
-            <option value="ALL">All Statuses</option>
-            <option value="RESERVED">RESERVED</option>
-            <option value="COMPLETED">COMPLETED</option>
-            <option value="CANCELLED">CANCELLED</option>
-          </select>
+            <span className={isRefreshing ? "inline-block animate-spin" : ""}>🔄</span>
+            <span>{isRefreshing ? "Refreshing..." : "Live Refresh"}</span>
+          </button>
+
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted">Status:</span>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              className="px-3 py-2 rounded-card border border-navy/20 bg-page text-xs font-medium focus:outline-none focus:border-rust"
+            >
+              <option value="ALL">All Statuses</option>
+              <option value="RESERVED">RESERVED</option>
+              <option value="COMPLETED">COMPLETED</option>
+              <option value="CANCELLED">CANCELLED</option>
+            </select>
+          </div>
         </div>
       </div>
 

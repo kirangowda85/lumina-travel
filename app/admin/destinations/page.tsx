@@ -1,6 +1,9 @@
 import { getAllPackages } from "@/lib/packages";
 import DestinationTable from "@/components/admin/DestinationTable";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = {
   title: "Manage Destinations | Payana Admin",
 };

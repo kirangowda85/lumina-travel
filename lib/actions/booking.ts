@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { auth, currentUser } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 import { prisma } from "@/lib/prisma";
 import { calculatePrice } from "@/lib/pricing";
@@ -118,6 +119,13 @@ export async function createBooking(input: CreateBookingInput): Promise<CreateBo
       });
     });
 
+    revalidatePath("/admin/bookings");
+    revalidatePath("/admin");
+    revalidatePath("/bookings");
+    revalidatePath("/destinations");
+    revalidatePath(`/destinations/${pkg.slug}`);
+    revalidatePath(`/destinations/${pkg.slug}/book`);
+
     return { ok: true, bookingId: booking.id, totalAmount: booking.totalAmount };
   } catch (err) {
     if (err instanceof Error && err.message === "SOLD_OUT") {
@@ -161,6 +169,11 @@ export async function cancelBooking(bookingId: string): Promise<CancelBookingRes
 
       await tx.booking.update({ where: { id: bookingId }, data: { status: "CANCELLED" } });
     });
+
+    revalidatePath("/admin/bookings");
+    revalidatePath("/admin");
+    revalidatePath("/bookings");
+    revalidatePath("/destinations");
 
     return { ok: true };
   } catch (err) {
